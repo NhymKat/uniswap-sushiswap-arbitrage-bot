@@ -144,14 +144,18 @@ newBlockEvent.on('data', async function(blockHeader){
             //time during the swap can be executed, after that it will be refused by uniswap
             const deadline = Math.round(Date.now()/1000)+validPeriod*60 
             
-            //gas
+            //gas - fixed
             const gasNeeded0 = (0.03*10**6)*2//previosly measured (lines below), take to much time, overestimate 2x
+            //gas - network esitmated 
             //const gasNeeded0 = await token0.methods.approve(uRouter.options.address,amountIn).estimateGas()
 
             /*beyond time spended, you need to approve uRouter to spend T0 
             before measuring so it will cost eth do it in runtime, al least for the first time*/
-            const gasNeeded1 = (0.15*10**6)*2 
-            /*
+            // - fixed
+            // const gasNeeded1 = (0.15*10**6)*2
+
+            // - estimated
+            
             await token0.methods.approve(uRouter.options.address,amountIn).send()
             const gasNeeded1 = await uRouter.methods.swapExactTokensForTokens(
                 amountIn,
@@ -160,7 +164,7 @@ newBlockEvent.on('data', async function(blockHeader){
                 myAccount,
                 deadline
             ).estimateGas()
-            */
+            
             const gasNeeded=gasNeeded0+gasNeeded1
 
             const gasPrice = await web3.eth.getGasPrice()

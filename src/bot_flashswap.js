@@ -139,9 +139,10 @@ newBlockEvent.on('data', async function(blockHeader){
             //time during the swap can be executed, after that it will be refused by uniswap
             const deadline = Math.round(Date.now()/1000)+validPeriod*60 
             
-            //gas
-            const gasNeeded = (0.3*10**6)*2 //previosly measured (line below), take to much time, overestimate 2x
-            //const gasNeeded = await sPair.methods.swap(amountIn,0,addrArbitrager,abi).estimateGas()
+            //gas - fixed
+            // const gasNeeded = (0.3*10**6)*2 //previosly measured (line below), take to much time, overestimate 2x
+            //gas - network estimated
+            const gasNeeded = await sPair.methods.swap(amountIn,0,addrArbitrager,abi).estimateGas()
 
             const gasPrice = await web3.eth.getGasPrice()
             const gasCost = Number(gasPrice)*gasNeeded/10**18
