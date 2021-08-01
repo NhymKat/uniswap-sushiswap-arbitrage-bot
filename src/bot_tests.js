@@ -65,6 +65,24 @@ async function asyncsVar() {
     //account with you will be using to sign the transactions
     const accountObj = await web3.eth.accounts.privateKeyToAccount(privateKey)
     myAccount = accountObj.address
+    
+
+
+    // ############## Look into the wallet detais for testing ##################
+    console.log(`\nAccount Data:`)
+    console.dir(accountObj, { depth: null }); // `depth: null` ensures unlimited recursion
+    const accountBalance = new web3.eth.getBalance(myAccount, function(err, result) {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log(web3.utils.fromWei(result, "ether") + " ETH")
+      }
+    })
+    console.log(`\nAccount Balance...`)
+    // ############## end ##################
+
+
+
 
     token0Name = await token0.methods.name().call()
     token0Symbol = await token0.methods.symbol().call()
@@ -93,8 +111,10 @@ newBlockEvent.on('data', async function(blockHeader){
         priceEth = (uReserve0/uReserve1) //dai per eth
             
         //token prices in eth, used bellow for determining if its possible to make a profit
-        const priceToken0Eth = priceToken0*1/priceEth 
-        const priceToken1Eth = priceToken1*1/priceEth 
+        const priceToken0Eth = priceToken0*1/priceEth
+        console.log(`T0 price (eth): ${priceToken0Eth}`);
+        const priceToken1Eth = priceToken1*1/priceEth
+        console.log(`T1 price (eth): ${priceToken1Eth}`);
 
         //tokens reserves on uniswap
         uReserves = await uPair1.methods.getReserves().call()
@@ -109,7 +129,9 @@ newBlockEvent.on('data', async function(blockHeader){
         //compute amount that must be traded to maximize the profit and, trade direction; function provided by uniswap
         const result = await utils.methods.computeProfitMaximizingTrade(sReserve0,sReserve1,uReserve0,uReserve1).call()
         const aToB = result[0] //trade direction
+        console.log(`Trade Direction is: ${aToB}\n`);
         const amountIn = result[1]
+        console.log(`AmountIn is: ${amountIn}\n`);
 
         if (amountIn==0) {console.log(`No arbitrage opportunity on block ${blockHeader.number}\n`); return}
         
