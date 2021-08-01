@@ -58,13 +58,17 @@ let uPair0,uPair1,sPair,myAccount,token0Name,token1Name,token0Symbol,token1Symbo
 async function asyncsVar() {
     //will be used to determine eth price later
     uPair0 = new web3.eth.Contract(IPair.abi, (await uFactory.methods.getPair(addrEth, addrDai).call()) )
+    console.log(`uPair0 is : ${uPair0[0]}`);
     //token pairs
     uPair1 = new web3.eth.Contract(IPair.abi, (await uFactory.methods.getPair(token0.options.address, token1.options.address).call()) )
+    console.log(`uPair1 is : ${uPair1}`);
     sPair = new web3.eth.Contract(IPair.abi, (await sFactory.methods.getPair(token0.options.address, token1.options.address).call()) )
+    console.log(`sPair is : ${sPair}`);
 
     //account with you will be using to sign the transactions
     const accountObj = await web3.eth.accounts.privateKeyToAccount(privateKey)
     myAccount = accountObj.address
+    console.log(`wallet is : ${myAccount}`);
 
     token0Name = await token0.methods.name().call()
     token0Symbol = await token0.methods.symbol().call()
@@ -81,11 +85,11 @@ newBlockEvent.on('connected', () =>{console.log('\nBot listening!\n')})
 
 //look up for a profit whenever a new block is minned
 newBlockEvent.on('data', async function(blockHeader){
-
+    console.log(`New block was mined`);
     try {
 
         let uReserves, uReserve0, uReserve1, sReserves, sReserve0, sReserve1
-
+        console.log(`Getting eth prices from uniswap`);
         //obtaining eth price from uniswap, pretty accurate
         uReserves = await uPair0.methods.getReserves().call()
         uReserve0 = uReserves[0] //dai
@@ -97,16 +101,19 @@ newBlockEvent.on('data', async function(blockHeader){
         const priceToken1Eth = priceToken1*1/priceEth 
 
         //tokens reserves on uniswap
+        console.log(`token reserves on uniswap`);
         uReserves = await uPair1.methods.getReserves().call()
         uReserve0 = uReserves[0] //T0
         uReserve1 = uReserves[1] //T1
         
         //tokens reserves on sushiswap
+        console.log(`token reserves on sushiswap`);
         sReserves = await sPair.methods.getReserves().call()
         sReserve0 = sReserves[0] //T0
         sReserve1 = sReserves[1] //T1
 
         //compute amount that must be traded to maximize the profit and, trade direction; function provided by uniswap
+        console.log(`compute trade amount and directions`);
         const result = await utils.methods.computeProfitMaximizingTrade(sReserve0,sReserve1,uReserve0,uReserve1).call()
         const aToB = result[0] //trade direction
         const amountIn = result[1]
@@ -140,9 +147,9 @@ newBlockEvent.on('data', async function(blockHeader){
             const deadline = Math.round(Date.now()/1000)+validPeriod*60 
             
             //gas - fixed
-            // const gasNeeded = (0.3*10**6)*2 //previosly measured (line below), take to much time, overestimate 2x
+            const gasNeeded = (0.3*10**6)*2 //previosly measured (line below), take to much time, overestimate 2x
             //gas - network estimated
-            const gasNeeded = await sPair.methods.swap(amountIn,0,addrArbitrager,abi).estimateGas()
+            // const gasNeeded = await sPair.methods.swap(amountIn,0,addrArbitrager,abi).estimateGas()
 
             const gasPrice = await web3.eth.getGasPrice()
             const gasCost = Number(gasPrice)*gasNeeded/10**18

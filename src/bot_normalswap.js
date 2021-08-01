@@ -55,6 +55,10 @@ const utils = new web3.eth.Contract(Utils.abi, addrUtils)//because includes an s
 //asyncs variables
 let uPair0,uPair1,sPair,myAccount,token0Name,token1Name,token0Symbol,token1Symbol
 async function asyncsVar() {
+
+    try{
+
+        console.log(`AsyncsVar called`);
     //will be used to determine eth price later
     uPair0 = new web3.eth.Contract(IPair.abi, (await uFactory.methods.getPair(addrEth, addrDai).call()) )
     //token pairs
@@ -69,6 +73,12 @@ async function asyncsVar() {
     token0Symbol = await token0.methods.symbol().call()
     token1Name = await token1.methods.name().call()
     token1Symbol = await token1.methods.symbol().call()
+
+    } catch(error) {
+
+        console.log(error)
+
+    }
 }
 
 asyncsVar()
@@ -81,6 +91,7 @@ newBlockEvent.on('connected', () =>{console.log('\nBot listening!\n')})
 //look for a profit every two mined blocks (two transactions needed to do the trade)
 let skip = true
 newBlockEvent.on('data', async function(blockHeader){
+    console.log(`New block was mined (and one skipped)`);
     
     skip = !skip
     if (skip) return
@@ -152,18 +163,18 @@ newBlockEvent.on('data', async function(blockHeader){
             /*beyond time spended, you need to approve uRouter to spend T0 
             before measuring so it will cost eth do it in runtime, al least for the first time*/
             // - fixed
-            // const gasNeeded1 = (0.15*10**6)*2
+            const gasNeeded1 = (0.15*10**6)*2
 
             // - estimated
             
-            await token0.methods.approve(uRouter.options.address,amountIn).send()
-            const gasNeeded1 = await uRouter.methods.swapExactTokensForTokens(
-                amountIn,
-                0,
-                path,
-                myAccount,
-                deadline
-            ).estimateGas()
+            // await token0.methods.approve(uRouter.options.address,amountIn).send()
+            // const gasNeeded1 = await uRouter.methods.swapExactTokensForTokens(
+            //     amountIn,
+            //     0,
+            //     path,
+            //     myAccount,
+            //     deadline
+            // ).estimateGas()
             
             const gasNeeded=gasNeeded0+gasNeeded1
 
