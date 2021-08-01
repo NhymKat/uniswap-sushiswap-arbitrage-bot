@@ -119,12 +119,16 @@ newBlockEvent.on('data', async function(blockHeader){
         //tokens reserves on uniswap
         uReserves = await uPair1.methods.getReserves().call()
         uReserve0 = uReserves[0] //T0
+         console.log(`T0 Uniswap reserves (eth): ${uReserve0}`);
         uReserve1 = uReserves[1] //T1
+         console.log(`T1 Uniswap reserves (eth): ${uReserve1}`);
         
         //tokens reserves on sushiswap
         sReserves = await sPair.methods.getReserves().call()
         sReserve0 = sReserves[0] //T0
+        console.log(`T0 Sushiswap reserves (eth): ${sReserve0}`);
         sReserve1 = sReserves[1] //T1
+         console.log(`T1 Sushiswap reserves (eth): ${sReserve1}`);
 
         //compute amount that must be traded to maximize the profit and, trade direction; function provided by uniswap
         const result = await utils.methods.computeProfitMaximizingTrade(sReserve0,sReserve1,uReserve0,uReserve1).call()
